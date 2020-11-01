@@ -37,20 +37,23 @@ class DefaultParser():
             line = self.file.readline()
             logging.debug("IN: " + line)
             m = re.search(r"</text>", line)
+
             if m:
                 self.is_inside_text = False
-                return title, lines
+                return title, ' '.join(lines)
 
-            m = re.search(r"<title>(.*)</title>", line)
+            m = re.search(r"<title>(.*)</title>", line)  # rewrtie this to not use continue, add this regex to regexes
             if m:
                 title = m.group(1)
                 continue
+
             m = re.search(r"<text bytes=.*>", line)
             if m:
-                m = re.search(r"#REDIRECT \[\[.*\]\]", line)  # empty text
+                m = re.search(r"#REDIRECT \[\[.*\]\]", line)  # rewrite as above
                 if m is None:
                     self.is_inside_text = True
                 continue
+
             if self.is_inside_text:
                 m = re.search(r"^\{\|", line)
                 if m:
@@ -89,5 +92,3 @@ class DefaultParser():
         if m.group(1) is not None:
             return m.group(1)
         return ""
-
-
