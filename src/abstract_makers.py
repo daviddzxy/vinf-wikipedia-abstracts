@@ -1,15 +1,13 @@
 import re
-import nltk
 import string
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
-
+from nltk.stem import WordNetLemmatizer
 
 class AbstractMaker():
     def __init__(self):
-        nltk.download("stopwords")
-        nltk.download("punkt")
         self.stopwords = set(stopwords.words("english"))
+        self.lemmatizer = WordNetLemmatizer()
 
     @staticmethod
     def lower_case(text):
@@ -38,16 +36,11 @@ class AbstractMaker():
     def remove_punctation(words):
         return [word for word in words if word not in string.punctuation]
 
+    def lemmatize(self, words):
+        return [self.lemmatizer.lemmatize(word) for word in words]
 
-class DefaultAbstractMaker(AbstractMaker):
-    def __call__(self, lines):
-        if len(lines) == 0:
-            return None
-
-        sentences = self.tokenize_sentences(lines)
+    def preprocess_sentences(self, sentences):
         preprocessed_sentences = [[]] * len(sentences)
-        sentence_scores = [0] * len(sentences)
-        word_scores = {}
         for idx, sentence in enumerate(sentences, 0):
             preprocessed_sentence = self.lower_case(sentence)
             preprocessed_sentence = self.remove_numbers(preprocessed_sentence)
@@ -56,6 +49,19 @@ class DefaultAbstractMaker(AbstractMaker):
             preprocessed_sentence = self.remove_stop_words(preprocessed_sentence)
             preprocessed_sentence = self.remove_punctation(preprocessed_sentence)
             preprocessed_sentences[idx] = preprocessed_sentence
+
+        return preprocessed_sentences
+
+
+class DefaultAbstractMaker(AbstractMaker):
+    def __call__(self, lines):
+        if len(lines) == 0:
+            return None
+
+        sentences = self.tokenize_sentences(lines)
+        preprocessed_sentences = self.preprocess_sentences(sentences)
+        sentence_scores = [0] * len(sentences)
+        word_scores = {}
 
         for preprocessed_sentence in preprocessed_sentences:
             for word in preprocessed_sentence:
@@ -70,6 +76,17 @@ class DefaultAbstractMaker(AbstractMaker):
 
         result_scores = []
         for sentence, score in sorted(zip(sentences, sentence_scores), reverse=True, key=lambda score: score[1]):
-            result_scores.append({"sentence": sentence, })
+            result_scores.append({"sentence": sentence, "score": score})
 
         return result_scores
+
+
+class TextRankAbstractMaker(AbstractMaker):
+    def __call__(self, lines):
+        if len(lines) == 0:
+            return None
+
+        sentences = self.tokenize_sentences(lines)
+        preprocessed_sentences = self.preprocess_sentences(sentences)
+        sentence_scores = [0] * len(sentences)
+        word_scores = {}
