@@ -1,7 +1,7 @@
 import re
 import logging
 
-logging.basicConfig(filename="logs.log", level=logging.DEBUG)
+logging.basicConfig(filename="logs.log", level=logging.DEBUG, filemode='w',)
 logger = logging.getLogger()
 
 
@@ -36,11 +36,14 @@ class DefaultParser():
         while True:
             line = self.file.readline()
             logging.debug("IN: " + line)
-            m = re.search(r"</text>", line)
 
+            if line == "":
+                return "EOF"
+
+            m = re.search(r"</text>", line)
             if m:
                 self.is_inside_text = False
-                return title, ' '.join(lines)
+                return {"title": title, "article": ' '.join(lines)}
 
             m = re.search(r"<title>(.*)</title>", line)  # rewrtie this to not use continue, add this regex to regexes
             if m:
