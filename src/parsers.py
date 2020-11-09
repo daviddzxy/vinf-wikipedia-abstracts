@@ -5,7 +5,7 @@ logging.basicConfig(filename="logs.log", level=logging.DEBUG, filemode='w',)
 logger = logging.getLogger()
 
 
-class DefaultParser():
+class WikiParser():
     def __init__(self, data_path):
         self.lines = []
         self.file = open(data_path)
@@ -28,7 +28,8 @@ class DefaultParser():
                      (r"&lt;(.*?)&gt;", ""),
                      (r"^(\{\{).*", ""),  # Library resources box / Infobox
                      (r"^}}$", ""),
-                     (r"^(\s)*#", "")]
+                     (r"^(\s)*#", ""),
+                     (r"{{|}}", "")]
 
     def get_one_article(self):
         lines = []
@@ -95,3 +96,26 @@ class DefaultParser():
         if m.group(1) is not None:
             return m.group(1)
         return ""
+
+class DBPediaAbstractParser():
+    def __init__(self, data_path):
+        self.file = open(data_path)
+        self.file.readline()  # skip first line
+
+    def get_one_abstract(self):
+        line = self.file.readline()
+
+        if line == "":
+            return "EOF"
+
+        print(line)
+        title = None
+        abstract = None
+        m = re.search(r"\<(.*?)/resource/(.*?)\>", line)
+        if m:
+            title = m.group(2)
+
+        m = re.search(r"\"(.*?)\"@en", line)
+        if m:
+            abstract = m.group(1)
+        return {"title": title, "abstract": abstract}
