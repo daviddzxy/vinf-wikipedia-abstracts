@@ -8,61 +8,62 @@ from nltk.cluster.util import cosine_distance
 
 
 class AbstractMaker:
-    def __init__(self):
+    def __init__(self, top_n):
         self.stopwords = set(stopwords.words("english"))
         self.lemmatizer = WordNetLemmatizer()
+        self.top_n = top_n
 
     @staticmethod
-    def lower_case(text):
+    def _lower_case(text):
         return text.lower()
 
     @staticmethod
-    def remove_numbers(text):
+    def _remove_numbers(text):
         return re.sub(r"\d+", "", text)
 
     @staticmethod
-    def remove_whitespaces(text):
+    def _remove_whitespaces(text):
         return text.strip()
 
     @staticmethod
-    def tokenize_sentences(text):
+    def _tokenize_sentences(text):
         return sent_tokenize(text)
 
     @staticmethod
-    def tokenize_words(text):
+    def _tokenize_words(text):
         return word_tokenize(text)
 
-    def remove_stop_words(self, words):
+    def _remove_stop_words(self, words):
         return [word for word in words if word not in self.stopwords]
 
     @staticmethod
-    def remove_punctation(words):
+    def _remove_punctation(words):
         return [word for word in words if word not in string.punctuation]
 
-    def lemmatize(self, words):
+    def _lemmatize(self, words):
         return [self.lemmatizer.lemmatize(word) for word in words]
 
     def _preprocess_sentences(self, sentences):
         preprocessed_sentences = [[]] * len(sentences)
         for idx, sentence in enumerate(sentences, 0):
-            preprocessed_sentence = self.lower_case(sentence)
-            preprocessed_sentence = self.remove_numbers(preprocessed_sentence)
-            preprocessed_sentence = self.remove_whitespaces(preprocessed_sentence)
-            preprocessed_sentence = self.tokenize_words(preprocessed_sentence)
-            preprocessed_sentence = self.remove_stop_words(preprocessed_sentence)
-            preprocessed_sentence = self.remove_punctation(preprocessed_sentence)
-            preprocessed_sentence = self.lemmatize(preprocessed_sentence)
+            preprocessed_sentence = self._lower_case(sentence)
+            preprocessed_sentence = self._remove_numbers(preprocessed_sentence)
+            preprocessed_sentence = self._remove_whitespaces(preprocessed_sentence)
+            preprocessed_sentence = self._tokenize_words(preprocessed_sentence)
+            preprocessed_sentence = self._remove_stop_words(preprocessed_sentence)
+            preprocessed_sentence = self._remove_punctation(preprocessed_sentence)
+            preprocessed_sentence = self._lemmatize(preprocessed_sentence)
             preprocessed_sentences[idx] = preprocessed_sentence
 
         return preprocessed_sentences
 
 
 class DefaultAbstractMaker(AbstractMaker):
-    def __call__(self, lines, top_n):
+    def __call__(self, lines):
         if len(lines) == 0:
             return None
 
-        sentences = self.tokenize_sentences(lines)
+        sentences = self._tokenize_sentences(lines)
         preprocessed_sentences = self._preprocess_sentences(sentences)
         sentence_scores = [0] * len(sentences)
         word_scores = {}
@@ -79,14 +80,14 @@ class DefaultAbstractMaker(AbstractMaker):
                 sentence_scores[idx] += word_scores[word]
             sentence_scores[idx] = sentence_scores[idx] / len(preprocessed_sentences[idx])
 
-        result_scores = []
+        top_sentences = []
         for sentence, score in sorted(
                 zip(sentences, sentence_scores),
                 reverse=True,
-                key=lambda score: score[1])[0: top_n]:
-            result_scores.append(sentence)
+                key=lambda score: score[1])[0: self.top_n]:
+            top_sentences.append(sentence)
 
-        return result_scores
+        return " ".join(top_sentences)
 
 
 class TextRankAbstractMaker(AbstractMaker):
@@ -104,11 +105,11 @@ class TextRankAbstractMaker(AbstractMaker):
 
         return 1 - cosine_distance(vector1, vector2)
 
-    def __call__(self, lines, top_n):
+    def __call__(self, lines):
         if len(lines) == 0:
             return None
 
-        sentences = self.tokenize_sentences(lines)
+        sentences = self._tokenize_sentences(lines)
         preprocessed_sentences = self._preprocess_sentences(sentences)
         sm = np.zeros([len(sentences), len(sentences)])
         for idx1 in range(len(sentences)):
@@ -122,16 +123,16 @@ class TextRankAbstractMaker(AbstractMaker):
 
         pr = np.array([1] * len(sm))
         dp_factor = 0.85
-        for i in range(0, 10):  # TODO threshold implementation
+        for i in range(0, 10):
             pr = (1 - dp_factor) + dp_factor * np.matmul(sm, pr)
 
         ranks = list(reversed(np.argsort(pr)))
-        top_sentences = [""] * top_n
-        for i in range(top_n):
+        top_sentences = [""] * self.top_n
+        for i in range(self.top_n):
             sentence_idx = ranks[i]
             top_sentences[i] = sentences[sentence_idx]
 
-        return top_sentences
+        return " ".join(top_sentences)
 
 
 
