@@ -4,7 +4,7 @@ from parsers import WikiParser, DBPediaAbstractParser
 from abstract_makers import DefaultAbstractMaker, TextRankAbstractMaker
 
 WIKI_INDEX = "wiki_abstracts"
-DBPEDIA_INDEX = "db_pedia_abstracts"
+DBPEDIA_INDEX = "dbpedia_abstracts"
 
 wiki_mapping = {
     "settings": {
@@ -63,9 +63,8 @@ def abstract_makers_generator(wiki_parser):
 
 def abstract_parser_generator(dbpedia_parser):
     while True:
-        article = wiki_parser.get_one_article()
+        article = dbpedia_parser.get_one_abstract()
         if article != "EOF":
-            dbpedia_parser.get_one_abstract()
             yield {"title": article["title"],
                    "abstract": article["abstract"]
                    }

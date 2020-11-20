@@ -52,6 +52,7 @@ class WikiParser():
             m = re.search(r"<title>(.*)</title>", line)
             if m:
                 title = m.group(1)
+                title = re.sub(r'([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))', r'\1 ', title)  # WorldWideWeb -> World Wide Web
                 continue
 
             m = re.search(r"<id>(.*)</id>", line)
@@ -117,12 +118,12 @@ class DBPediaAbstractParser():
         if line == "":
             return "EOF"
 
-        print(line)
         title = None
         abstract = None
         m = re.search(r"\<(.*?)/resource/(.*?)\>", line)
         if m:
             title = m.group(2)
+            title = title.replace("_", " ")
 
         m = re.search(r"\"(.*?)\"@en", line)
         if m:
