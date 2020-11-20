@@ -11,6 +11,7 @@ class WikiParser():
         self.file = open(data_path)
         self.is_inside_text = False
         self.is_inside_table = False
+        self.article_id_found = False
         self.regexes = [(r"\[\[(File|Image|Category):.*\]\]", ""),
                      (r"\[\[(.*?)(\|(.*?))*\]\]", self._link_text),
                      (r"'{3}(.*?)'{3}", r"\1"),
@@ -33,6 +34,7 @@ class WikiParser():
 
     def get_one_article(self):
         lines = []
+        article_id = None
         title = None
         while True:
             line = self.file.readline()
@@ -44,16 +46,22 @@ class WikiParser():
             m = re.search(r"</text>", line)
             if m:
                 self.is_inside_text = False
-                return {"title": title, "article": ' '.join(lines)}
+                self.article_id_found = False
+                return {"title": title, "id": article_id, "article": ' '.join(lines)}
 
-            m = re.search(r"<title>(.*)</title>", line)  # rewrtie this to not use continue, add this regex to regexes
+            m = re.search(r"<title>(.*)</title>", line)
             if m:
                 title = m.group(1)
                 continue
 
+            m = re.search(r"<id>(.*)</id>", line)
+            if m and not self.article_id_found:
+                article_id = m.group(1)
+                self.article_id_found = True
+
             m = re.search(r"<text bytes=.*>", line)
             if m:
-                m = re.search(r"#REDIRECT \[\[.*\]\]", line)  # rewrite as above
+                m = re.search(r"#REDIRECT \[\[.*\]\]", line)
                 if m is None:
                     self.is_inside_text = True
                 continue
@@ -96,6 +104,7 @@ class WikiParser():
         if m.group(1) is not None:
             return m.group(1)
         return ""
+
 
 class DBPediaAbstractParser():
     def __init__(self, data_path):
