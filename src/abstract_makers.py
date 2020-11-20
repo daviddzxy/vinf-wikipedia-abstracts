@@ -61,7 +61,7 @@ class AbstractMaker:
 class DefaultAbstractMaker(AbstractMaker):
     def __call__(self, lines):
         if len(lines) == 0:
-            return None
+            return ""
 
         sentences = self._tokenize_sentences(lines)
         preprocessed_sentences = self._preprocess_sentences(sentences)
@@ -107,7 +107,7 @@ class TextRankAbstractMaker(AbstractMaker):
 
     def __call__(self, lines):
         if len(lines) == 0:
-            return None
+            return ""
 
         sentences = self._tokenize_sentences(lines)
         preprocessed_sentences = self._preprocess_sentences(sentences)

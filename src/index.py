@@ -6,7 +6,6 @@ from abstract_makers import DefaultAbstractMaker, TextRankAbstractMaker
 WIKI_INDEX = "wiki_abstracts"
 DBPEDIA_INDEX = "db_pedia_abstracts"
 
-
 wiki_mapping = {
     "settings": {
         "number_of_shards": 3,
@@ -74,8 +73,8 @@ def abstract_parser_generator(dbpedia_parser):
             return
 
 
-wiki_parser = WikiParser("../data/small-test.xml")
-dbpedia_parser = DBPediaAbstractParser("../data/long_abstracts_en.nq")
+wiki_parser = WikiParser("../data/test-wiki.xml")
+dbpedia_parser = DBPediaAbstractParser("../data/test-dbpedia.xml")
 
 client = Elasticsearch("http://localhost:9200")
 
