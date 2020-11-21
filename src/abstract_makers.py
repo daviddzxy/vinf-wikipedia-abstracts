@@ -133,6 +133,3 @@ class TextRankAbstractMaker(AbstractMaker):
             top_sentences[i] = sentences[sentence_idx]
 
         return " ".join(top_sentences)
-
-
-
