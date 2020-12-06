@@ -92,4 +92,7 @@ if args.compare and basic and rank and dbpedia:
     db_pedia_terms = db_pedia_terms["term_vectors"]["abstract"]["terms"]
     basic_terms = basic_terms["term_vectors"]["abstract"]["terms"]
     rank_terms = rank_terms["term_vectors"]["abstract"]["terms"]
-    utils.compare_terms(db_pedia_terms, basic_terms, doc_count)
+    basic_similarity = utils.compare_terms(db_pedia_terms, basic_terms, doc_count)
+    rank_similarity = utils.compare_terms(db_pedia_terms, rank_terms, doc_count)
+    print("Similarity basic abstract - dbpedia abstract: {}".format(basic_similarity))
+    print("Similarity text rank abstract - dbpedia abstract: {}".format(rank_similarity))

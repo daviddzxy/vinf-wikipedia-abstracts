@@ -9,7 +9,15 @@ DBPEDIA_INDEX = "dbpedia_abstracts"
 wiki_mapping = {
     "settings": {
         "number_of_shards": 1,
-        "number_of_replicas": 0
+        "number_of_replicas": 0,
+        "analysis": {
+            "analyzer": {
+                "english_analyzer": {
+                    "type": "standard",
+                    "stopwords": "_english_"
+                }
+            }
+        }
     },
     "mappings": {
         "dynamic": "strict",
@@ -18,10 +26,12 @@ wiki_mapping = {
                 "type": "text"
             },
             "basic_abstract": {
-                "type": "text"
+                "type": "text",
+                "analyzer": "english_analyzer"
             },
             "rank_abstract": {
-                "type": "text"
+                "type": "text",
+                "analyzer": "english_analyzer"
             }
         }
     }
@@ -30,7 +40,15 @@ wiki_mapping = {
 dbpedia_mapping = {
     "settings": {
         "number_of_shards": 1,
-        "number_of_replicas": 0
+        "number_of_replicas": 0,
+        "analysis": {
+            "analyzer": {
+                "english_analyzer": {
+                    "type": "standard",
+                    "stopwords": "_english_"
+                }
+            }
+        }
     },
     "mappings": {
         "dynamic": "strict",
@@ -40,6 +58,7 @@ dbpedia_mapping = {
             },
             "abstract": {
                 "type": "text",
+                "analyzer": "english_analyzer",
                 "term_vector": "yes"
             }
         }
