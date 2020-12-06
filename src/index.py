@@ -67,8 +67,8 @@ dbpedia_mapping = {
 
 
 def abstract_makers_generator(wiki_parser):
-    default_abstract_maker = DefaultAbstractMaker(5)
-    text_rank_abstract_maker = TextRankAbstractMaker(5)
+    default_abstract_maker = DefaultAbstractMaker(top_n=5)
+    text_rank_abstract_maker = TextRankAbstractMaker(top_n=5, delta=0.001, epochs=10)
     while True:
         article = wiki_parser.get_one_article()
         if article != "EOF":

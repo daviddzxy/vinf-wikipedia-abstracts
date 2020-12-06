@@ -91,6 +91,11 @@ class DefaultAbstractMaker(AbstractMaker):
 
 
 class TextRankAbstractMaker(AbstractMaker):
+    def __init__(self, top_n, delta, epochs):
+        super().__init__(top_n=top_n)
+        self.delta = delta
+        self.epochs = epochs
+
     @staticmethod
     def get_similarity(sentence1, sentence2):
         combined_words = list(set(sentence1 + sentence2))
@@ -121,10 +126,17 @@ class TextRankAbstractMaker(AbstractMaker):
                                                     preprocessed_sentences[idx2]
                                                     )
 
+        norm = np.sum(sm, axis=0)
+        sm = np.divide(sm, norm, where=norm != 0)
         pr = np.array([1] * len(sm))
         dp_factor = 0.85
-        for i in range(0, 10):
+        prev_pr = 0
+        for i in range(0, self.epochs):
             pr = (1 - dp_factor) + dp_factor * np.matmul(sm, pr)
+            if abs(prev_pr - np.sum(pr)) < self.delta:
+                break
+            else:
+                prev_pr = np.sum(pr)
 
         ranks = list(reversed(np.argsort(pr)))
         top_sentences = [""] * self.top_n
