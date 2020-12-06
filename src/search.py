@@ -6,8 +6,8 @@ WIKI_INDEX = "wiki_abstracts"
 DBPEDIA_INDEX = "dbpedia_abstracts"
 
 parser = argparse.ArgumentParser("Search abstracts by title.")
-parser.add_argument("title", nargs=1, help="Title string")
-parser.add_argument("--compare", default=False, action="store_true", help="Print abstract statistics.")
+parser.add_argument("title", nargs=1, help="Title string.")
+parser.add_argument("--compare", default=True, action="store_true", help="Print abstract statistics.")
 args = parser.parse_args()
 
 search_query = {
