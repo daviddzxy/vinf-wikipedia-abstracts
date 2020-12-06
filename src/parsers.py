@@ -1,7 +1,7 @@
 import re
 import logging
 
-logging.basicConfig(filename="logs.log", level=logging.DEBUG, filemode='w',)
+logging.basicConfig(filename="logs.log", level=logging.DEBUG, filemode='w')
 logger = logging.getLogger()
 
 
@@ -38,8 +38,6 @@ class WikiParser():
         title = None
         while True:
             line = self.file.readline()
-            logging.debug("IN: " + line)
-
             if line == "":
                 return "EOF"
 
@@ -47,7 +45,11 @@ class WikiParser():
             if m:
                 self.is_inside_text = False
                 self.article_id_found = False
-                return {"title": title, "id": article_id, "article": ' '.join(lines)}
+                return {
+                    "title": title,
+                    "id": article_id,
+                    "article": ' '.join(lines)
+                }
 
             m = re.search(r"<title>(.*)</title>", line)
             if m:
@@ -80,13 +82,8 @@ class WikiParser():
                         line = re.sub(regex[0], regex[1], line)
 
                     if not line.isspace():
-                        logging.debug("ADDED: " + line)
                         line = re.sub(r"\n", r" ", line)
                         lines.append(line)
-                    else:
-                        logging.debug("REJECTED")
-                else:
-                    logging.debug("INSIDE TABLE - REJECTED")
 
     @staticmethod
     def _link_text(m):
@@ -128,4 +125,7 @@ class DBPediaAbstractParser():
         m = re.search(r"\"(.*?)\"@en", line)
         if m:
             abstract = m.group(1)
-        return {"title": title, "abstract": abstract}
+        return {
+            "title": title,
+            "abstract": abstract
+        }
