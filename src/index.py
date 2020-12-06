@@ -8,10 +8,11 @@ DBPEDIA_INDEX = "dbpedia_abstracts"
 
 wiki_mapping = {
     "settings": {
-        "number_of_shards": 3,
-        "number_of_replicas": 1
+        "number_of_shards": 1,
+        "number_of_replicas": 0
     },
     "mappings": {
+        "dynamic": "strict",
         "properties": {
             "title": {
                 "type": "text"
@@ -28,16 +29,18 @@ wiki_mapping = {
 
 dbpedia_mapping = {
     "settings": {
-        "number_of_shards": 3,
-        "number_of_replicas": 1
+        "number_of_shards": 1,
+        "number_of_replicas": 0
     },
     "mappings": {
+        "dynamic": "strict",
         "properties": {
             "title": {
                 "type": "text"
             },
             "abstract": {
-                "type": "text"
+                "type": "text",
+                "term_vector": "yes"
             }
         }
     }
@@ -52,10 +55,11 @@ def abstract_makers_generator(wiki_parser):
         if article != "EOF":
             basic_abstract = default_abstract_maker(article["article"])
             rank_abstract = text_rank_abstract_maker(article["article"])
-            yield {"_id": article["id"],
-                   "title": article["title"],
-                   "basic_abstract": basic_abstract,
-                   "rank_abstract": rank_abstract
+            yield {
+                    "_id": article["id"],
+                    "title": article["title"],
+                    "basic_abstract": basic_abstract,
+                    "rank_abstract": rank_abstract
                    }
         else:
             return
@@ -65,8 +69,9 @@ def abstract_parser_generator(dbpedia_parser):
     while True:
         article = dbpedia_parser.get_one_abstract()
         if article != "EOF":
-            yield {"title": article["title"],
-                   "abstract": article["abstract"]
+            yield {
+                    "title": article["title"],
+                    "abstract": article["abstract"]
                    }
         else:
             return
@@ -88,7 +93,6 @@ client.indices.create(
     body=dbpedia_mapping,
     ignore=400
 )
-
 
 helpers.bulk(client, abstract_makers_generator(wiki_parser), index=WIKI_INDEX, raise_on_error=True)
 helpers.bulk(client, abstract_parser_generator(dbpedia_parser), index=DBPEDIA_INDEX, raise_on_error=True)
