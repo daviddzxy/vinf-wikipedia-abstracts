@@ -1,8 +1,4 @@
 import re
-import logging
-
-logging.basicConfig(filename="logs.log", level=logging.DEBUG, filemode='w')
-logger = logging.getLogger()
 
 
 class WikiParser():

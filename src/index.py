@@ -110,6 +110,7 @@ def abstract_parser_generator(dbpedia_parser):
 wiki_parser = WikiParser("../data/test-wiki.xml")
 dbpedia_parser = DBPediaAbstractParser("../data/test-dbpedia.xml")
 
+
 client = Elasticsearch("http://localhost:{}".format(args.port))
 
 client.indices.create(

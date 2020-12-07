@@ -5,7 +5,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.cluster.util import cosine_distance
-
+import traceback
 
 class AbstractMaker:
     def __init__(self, top_n):
@@ -65,6 +65,11 @@ class DefaultAbstractMaker(AbstractMaker):
 
         sentences = self._tokenize_sentences(lines)
         preprocessed_sentences = self._preprocess_sentences(sentences)
+
+        top_n = self.top_n
+        if len(preprocessed_sentences) < self.top_n:
+            top_n = len(preprocessed_sentences)
+
         sentence_scores = [0] * len(sentences)
         word_scores = {}
 
@@ -76,6 +81,8 @@ class DefaultAbstractMaker(AbstractMaker):
                     word_scores[word] = 0
 
         for idx, preprocessed_sentence in enumerate(preprocessed_sentences):
+            if len(preprocessed_sentences[idx]) == 0:
+                continue
             for word in preprocessed_sentence:
                 sentence_scores[idx] += word_scores[word]
             sentence_scores[idx] = sentence_scores[idx] / len(preprocessed_sentences[idx])
@@ -84,7 +91,7 @@ class DefaultAbstractMaker(AbstractMaker):
         for sentence, score in sorted(
                 zip(sentences, sentence_scores),
                 reverse=True,
-                key=lambda score: score[1])[0: self.top_n]:
+                key=lambda score: score[1])[0: top_n]:
             top_sentences.append(sentence)
 
         return " ".join(top_sentences)
@@ -116,6 +123,10 @@ class TextRankAbstractMaker(AbstractMaker):
 
         sentences = self._tokenize_sentences(lines)
         preprocessed_sentences = self._preprocess_sentences(sentences)
+        top_n = self.top_n
+        if len(preprocessed_sentences) < self.top_n:
+            top_n = len(preprocessed_sentences)
+
         sm = np.zeros([len(sentences), len(sentences)])
         for idx1 in range(len(sentences)):
             for idx2 in range(len(sentences)):
@@ -139,8 +150,8 @@ class TextRankAbstractMaker(AbstractMaker):
                 prev_pr = np.sum(pr)
 
         ranks = list(reversed(np.argsort(pr)))
-        top_sentences = [""] * self.top_n
-        for i in range(self.top_n):
+        top_sentences = [""] * top_n
+        for i in range(top_n):
             sentence_idx = ranks[i]
             top_sentences[i] = sentences[sentence_idx]
 
