@@ -5,7 +5,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.cluster.util import cosine_distance
-import traceback
+
 
 class AbstractMaker:
     def __init__(self, top_n):
